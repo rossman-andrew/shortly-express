@@ -42,7 +42,7 @@ app.post('/signup', (req, res, next) => {
   var username = req.body.username;
   models.Users.get({ username })
   .then(data => {
-    console.log('data', JSON.stringify(data));
+    // console.log('data', JSON.stringify(data));
     if (data) {
       res.redirect('/signup');
     } else {
@@ -51,6 +51,29 @@ app.post('/signup', (req, res, next) => {
     }
   });
 });
+
+app.post('/login', (req, res, next) => {
+  // Make a get request with username
+    // grab hashed-password
+      // then run compare()
+        // if true, redirect to index
+    // if no username, return
+  var username = req.body.username;
+  var password = req.body.password;
+  models.Users.get({ username })
+    .then(data => {
+      if (data) {
+        if (models.Users.compare(password, data.password, data.salt)) {
+          res.redirect('/');
+        } else {
+          res.redirect('/login');
+        }
+      } else {
+        res.redirect('/login');
+      }
+    });
+});
+
 
 app.post('/links', 
 (req, res, next) => {
