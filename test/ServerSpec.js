@@ -122,8 +122,8 @@ describe('', function() {
       });
     });
   });
-
-  xdescribe('Account Creation:', function() {
+  
+  describe('Account Creation:', function() {
 
     it('signup creates a new user record', function(done) {
       var options = {
@@ -207,8 +207,8 @@ describe('', function() {
       });
     });
   });
-
-  xdescribe('Account Login:', function() {
+// test 9
+  describe('Account Login:', function() {
 
     beforeEach(function(done) {
       var options = {

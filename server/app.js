@@ -38,6 +38,20 @@ app.get('/links',
     });
 });
 
+app.post('/signup', (req, res, next) => {
+  var username = req.body.username;
+  models.Users.get({ username })
+  .then(data => {
+    console.log('data', JSON.stringify(data));
+    if (data) {
+      res.redirect('/signup');
+    } else {
+      models.Users.create(req.body)
+        .then(() => res.redirect('/'));
+    }
+  });
+});
+
 app.post('/links', 
 (req, res, next) => {
   var url = req.body.url;
