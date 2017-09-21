@@ -401,7 +401,6 @@ describe('', function() {
 
         var requestWithoutCookie = httpMocks.createRequest();
         var response = httpMocks.createResponse();
-
         createSession(requestWithoutCookie, response, function() {
           var cookie = response.cookies.shortlyid.value;
           var secondResponse = httpMocks.createResponse();
@@ -434,7 +433,7 @@ describe('', function() {
           });
         });
       });
-//20 
+
       it('assigns a username and userId property to the session object if the session is assigned to a user', function(done) {
         var requestWithoutCookie = httpMocks.createRequest();
         var response = httpMocks.createResponse();
@@ -443,7 +442,6 @@ describe('', function() {
         db.query('INSERT INTO users (username) VALUES (?)', username, function(error, results) {
           if (error) { return done(error); }
           var userId = results.insertId;
-
           createSession(requestWithoutCookie, response, function() {
             var hash = requestWithoutCookie.session.hash;
             db.query('UPDATE sessions SET userId = ? WHERE hash = ?', [userId, hash], function(error, result) {
@@ -454,7 +452,6 @@ describe('', function() {
 
               createSession(requestWithCookies, secondResponse, function() {
                 var session = requestWithCookies.session;
-                // console.log(session);
                 expect(session).to.be.an('object');
                 expect(session.user.username).to.eq(username);
                 expect(session.userId).to.eq(userId);
@@ -480,7 +477,7 @@ describe('', function() {
       });
     });
   });
-
+// 22
   xdescribe('Sessions and cookies', function() {
     var requestWithSession;
     var cookieJar;

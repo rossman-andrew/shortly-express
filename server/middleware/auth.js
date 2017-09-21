@@ -8,57 +8,60 @@ module.exports.createSession = (req, res, next) => {
     // update req.session.user.username/userID with userid/username found FROM database
   if (req.cookies.shortlyid) {
     var hash = req.cookies.shortlyid;
-    // console.log('hash', hash);
     models.Sessions.get({ hash })
       .then((sessionData) => {
-        req.session = sessionData;
-        var id = sessionData.userId;
-        
-        console.log('userID', sessionData.userId);
-        models.Users.get({ id })
-          .then((userData) => {
-            // now we have username associated with id of session
-            req.session.user = { username: userData.username };
-            res.cookie('shortlyid', req.session.hash);
+        if (sessionData) {
+          req.session = sessionData;
+          res.cookie('shortlyid', req.session.hash);
+          var id = sessionData.userId;
+          if (id) {
+            req.session.userId = id;
+            models.Users.get({ id })
+              .then((userData) => {
+                // now we have username associated with id of session
+                req.session.user = { username: userData.username };
+                next();  
+              });
+          } else { // when userId is null
             next();
-          });
+          }
+        } else {
+          // reassign res.cookie() with new cookie
+          models.Sessions.create()
+            .then((sessionData) => {
+              req.session = sessionData;      
+              res.cookie('shortlyid', req.session.hash);
+              next();
+            });
+        }
       });
   } else {
-    // models.Sessions.create()
-    //   .then((data) => {
-    //     var username = req.body.username;
-    //     var hash = data.hash;
-    //     console.log('created hash', hash);
-    //     models.Users.get({ username })
-    //       .then((userData) => {
-    //         var userId = userData.id;
-    //         return models.Sessions.update({ id }, { userId })      
-    //       });
-    //     })
-    //   .then
-    //     models.Sessions.get({ id })
-    //       .then((data) => {
-    //         req.session = data;
-    //         res.cookie('shortlyid', req.session.hash);
-    //         next();
-    //       });
-    //     });
-  
-  }
-
+    models.Sessions.create()
+      .then((data) => {
+        var id = data.insertId;
+        return models.Sessions.get({ id });
+      })
+      .then((sessionData) => {
+        req.session = sessionData;      
+        res.cookie('shortlyid', req.session.hash);
+      })
+      .then(() => {
+        var username = req.body.username;
+        req.session.user = { username };
+        return models.Users.get({ username });
+      })
+      .then((userData) => {
+        if (userData && userData.id) {
+          req.session.userId = userData.id;
+        }
+        next();
+      });
   // look at req.cookies
     // if req.cookie.shortlyid does not exist,
         // then create session
         // assign req.session with new session
     // assign res.cookie with req.session 
-
-
-
-
-
-  // if session hash is already in session table
-    // let req.session.user.username = username associated with userId
-    // let req.session.userId = userId
+  }
 
 };
 
