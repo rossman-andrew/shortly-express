@@ -477,8 +477,8 @@ describe('', function() {
       });
     });
   });
-// 22
-  xdescribe('Sessions and cookies', function() {
+
+  describe('Sessions and cookies', function() {
     var requestWithSession;
     var cookieJar;
 
@@ -567,7 +567,7 @@ describe('', function() {
       });
     });
   });
-
+// 26
   xdescribe('Privileged Access:', function() {
 
     it('Redirects to login page if a user tries to access the main page and is not signed in', function(done) {
