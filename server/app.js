@@ -21,25 +21,17 @@ app.use(Auth.createSession);
 
 app.get('/', 
 (req, res) => {
-  if (req.session.userId) {
-    res.render('index');
-  } else {
-    res.redirect('/login');
-  }
+  verifySession.call(this, req, res, () => res.render('index'));
 });
 
 app.get('/create', 
 (req, res) => {
-  if (req.session.userId) {
-    res.render('index');
-  } else {
-    res.redirect('/login');
-  }
+  verifySession.call(this, req, res, () => res.render('index'));
 });
 
 app.get('/links', 
 (req, res, next) => {
-  if (req.session.userId) {
+  verifySession.call(this, req, res, () => {
     models.Links.getAll()
       .then(links => {
         res.status(200).send(links);
@@ -47,9 +39,7 @@ app.get('/links',
       .error(error => {
         res.status(500).send(error);
       });
-  } else {
-    res.redirect('/login');
-  }
+  });
 });
 
 app.get('/login', 
@@ -163,6 +153,14 @@ app.post('/links',
 // Write your authentication routes here
 /************************************************************/
 
+const verifySession = function(req, res, callback) {
+  if (req.session.userId) {
+    callback();
+  } else {
+    res.redirect('/login');
+  }
+};
+module.exports = verifySession;
 
 
 /************************************************************/
