@@ -324,7 +324,7 @@ describe('', function() {
       });
     });
   });
-// 15
+
   describe('Express Middleware', function() {
     var cookieParser = require('../server/middleware/cookieParser.js');
     var createSession = require('../server/middleware/auth.js').createSession;
@@ -434,7 +434,7 @@ describe('', function() {
           });
         });
       });
-
+//20 
       it('assigns a username and userId property to the session object if the session is assigned to a user', function(done) {
         var requestWithoutCookie = httpMocks.createRequest();
         var response = httpMocks.createResponse();
@@ -454,6 +454,7 @@ describe('', function() {
 
               createSession(requestWithCookies, secondResponse, function() {
                 var session = requestWithCookies.session;
+                // console.log(session);
                 expect(session).to.be.an('object');
                 expect(session.user.username).to.eq(username);
                 expect(session.userId).to.eq(userId);

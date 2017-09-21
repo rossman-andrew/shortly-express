@@ -1,9 +1,22 @@
-const parseCookies = (req, res, next) => {
-  // access cookie from request
-  // if valid, parse them into an object
-  // assign to cookies property on the request
-  console.log('trying to find cookie', req, req.body.cookies);
+const models = require('../models');
+const auth = require('./auth');
 
+
+const parseCookies = (req, res, next) => {
+
+  var cookieObj = {};
+  
+  // parse existing cookies
+  if (req.headers.cookie) {
+    var cookies = req.headers.cookie.split('; ');
+    cookies.forEach((cookie) => {
+      var cookieArr = cookie.split('=');
+      cookieObj[cookieArr[0]] = cookieArr[1];
+    });
+  }
+
+  req.cookies = cookieObj;
+  next();  
 };
 
 module.exports = parseCookies;
