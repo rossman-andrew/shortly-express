@@ -21,32 +21,55 @@ app.use(Auth.createSession);
 
 app.get('/', 
 (req, res) => {
-  res.render('index');
+  if (req.session.userId) {
+    res.render('index');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 app.get('/create', 
 (req, res) => {
-  res.render('index');
+  if (req.session.userId) {
+    res.render('index');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 app.get('/links', 
 (req, res, next) => {
-  models.Links.getAll()
-    .then(links => {
-      res.status(200).send(links);
-    })
-    .error(error => {
-      res.status(500).send(error);
-    });
+  if (req.session.userId) {
+    models.Links.getAll()
+      .then(links => {
+        res.status(200).send(links);
+      })
+      .error(error => {
+        res.status(500).send(error);
+      });
+  } else {
+    res.redirect('/login');
+  }
 });
+
+app.get('/login', 
+(req, res) => {
+  res.render('login');
+});
+
+// commented out to pass spec
+// app.get('/signup', 
+// (req, res) => {
+//   res.render('signup');
+// });
+
 
 app.get('/logout', 
 (req, res, next) => {
-  // req.session will contain all info we want to grab
-  // delete entry related to session hash in our database
   models.Sessions.delete({ hash: req.session.hash })
     .then(() => {
-      console.log('app-side', res.cookie);
+      res.cookie('shortlyid', null);
+      req.session.userId = null;
       res.redirect('/');
     });
 });
@@ -55,20 +78,18 @@ app.post('/signup', (req, res, next) => {
   var username = req.body.username;
   models.Users.get({ username })
   .then(data => {
-    // console.log('data', JSON.stringify(data));
     if (data) {
       // user already has account
       res.redirect('/signup');
     } else {
       // create user
-        // also update Sessions table with userid/sessionHash
       models.Users.create(req.body)
         .then((data) => {
           return models.Sessions.update({ hash: req.session.hash }, { userId: data.insertId });
         })
-        .then((sessionData) => {
-          req.session = sessionData;
-          // should we also update req.session.user here also?
+        .then((data) => {
+          req.session.userId = data.insertId;
+          req.session.user = { username: req.body.username };
           res.redirect('/');
         });        
     }
@@ -76,25 +97,29 @@ app.post('/signup', (req, res, next) => {
 });
 
 app.post('/login', (req, res, next) => {
-  // Make a get request with username
-    // grab hashed-password
-      // then run compare()
-        // if true, redirect to index
-    // if no username, return
   var username = req.body.username;
   var password = req.body.password;
   models.Users.get({ username })
     .then(data => {
       if (data) {
         if (models.Users.compare(password, data.password, data.salt)) {
-          res.redirect('/');
+          // at successful login
+          models.Sessions.update({ hash: req.session.hash }, { userId: data.id })
+            .then((data) => {
+              req.session.userId = data.insertId;
+              req.session.user = { username };
+              res.redirect('/');
+            });
+          
         } else {
+          // unsuccessful login
           res.redirect('/login');
         }
       } else {
         res.redirect('/login');
       }
     });
+  
 });
 
 
